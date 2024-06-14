@@ -22,7 +22,9 @@
     "vercel:yolo": "yarn workspace @ss-2/nextjs vercel:yolo",
     "format": "yarn workspace @ss-2/nextjs format && yarn workspace @ss-2/snfoundry format",
     "format:check": "yarn workspace @ss-2/nextjs format:check && yarn workspace @ss-2/snfoundry format:check",
-    "prepare": "husky"
+    "prepare": "husky",
+    "install-all": "curl -fsSL https://raw.githubusercontent.com/Nadai2010/scaffold-stark-2/main/packages/snfoundry/scripts-install/install_all.sh | bash && echo 'Installation completed successfully.'",
+    "postinstall": "yarn install-all"
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {
