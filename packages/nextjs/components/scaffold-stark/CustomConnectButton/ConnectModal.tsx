@@ -4,6 +4,8 @@ import Wallet from "~~/components/scaffold-stark/CustomConnectButton/Wallet";
 import { useLocalStorage } from "usehooks-ts";
 import { burnerAccounts } from "~~/utils/devnetAccounts";
 import { BurnerConnector } from "~~/services/web3/stark-burner/BurnerConnector";
+import { katanaAccounts } from "~~/utils/katanaAccounts";
+import { KatanaConnector } from "~~/services/web3/stark-burner/KatanaConnector";
 import { useTheme } from "next-themes";
 import { BlockieAvatar } from "../BlockieAvatar";
 import GenericModal from "./GenericModal";
@@ -17,6 +19,7 @@ const loader = ({ src }: { src: string }) => {
 const ConnectModal = () => {
   const modalRef = useRef<HTMLInputElement>(null);
   const [isBurnerWallet, setIsBurnerWallet] = useState(false);
+  const [isKatanaWallet, setIsKatanaWallet] = useState(false);
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const { connectors, connect, error, status, ...props } = useConnect();
@@ -46,6 +49,10 @@ const ConnectModal = () => {
       setIsBurnerWallet(true);
       return;
     }
+    if (connector.id === "katana-wallet") {
+      setIsKatanaWallet(true);
+      return;
+    }
     connect({ connector });
     setLastConnector({ id: connector.id });
     setLastConnectionTime(Date.now());
@@ -67,11 +74,26 @@ const ConnectModal = () => {
     }
   }
 
+  function handleConnectKatana(
+    e: React.MouseEvent<HTMLButtonElement>,
+    ix: number,
+  ) {
+    const connector = connectors.find(
+      (it) => it.id == "katana-wallet",
+    ) as KatanaConnector;
+    if (connector) {
+      connector.katanaAccount = katanaAccounts[ix];
+      connect({ connector });
+      setLastConnector({ id: connector.id, ix });
+      handleCloseModal();
+    }
+  }
+
   return (
     <div>
       <label
         htmlFor="connect-modal"
-        className="rounded-[18px]  btn-sm font-bold px-8 bg-btn-wallet py-3 cursor-pointer"
+        className="rounded-[18px] btn-sm font-bold px-8 bg-btn-wallet py-3 cursor-pointer"
       >
         <span>Connect</span>
       </label>
@@ -86,10 +108,15 @@ const ConnectModal = () => {
         <>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">
-              {isBurnerWallet ? "Choose account" : "Connect a Wallet"}
+              {isBurnerWallet || isKatanaWallet
+                ? "Choose account"
+                : "Connect a Wallet"}
             </h3>
             <label
-              onClick={() => setIsBurnerWallet(false)}
+              onClick={() => {
+                setIsBurnerWallet(false);
+                setIsKatanaWallet(false);
+              }}
               htmlFor="connect-modal"
               className="btn btn-ghost btn-sm btn-circle cursor-pointer"
             >
@@ -98,7 +125,7 @@ const ConnectModal = () => {
           </div>
           <div className="flex flex-col flex-1 lg:grid">
             <div className="flex flex-col gap-4 w-full px-8 py-10">
-              {!isBurnerWallet ? (
+              {!isBurnerWallet && !isKatanaWallet ? (
                 connectors.map((connector, index) => (
                   <Wallet
                     key={connector.id || index}
@@ -107,7 +134,7 @@ const ConnectModal = () => {
                     handleConnectWallet={handleConnectWallet}
                   />
                 ))
-              ) : (
+              ) : isBurnerWallet ? (
                 <div className="flex flex-col pb-[20px] justify-end gap-3">
                   <div className="h-[300px] overflow-y-auto flex w-full flex-col gap-2">
                     {burnerAccounts.map((burnerAcc, ix) => (
@@ -124,6 +151,28 @@ const ConnectModal = () => {
                             size={35}
                           />
                           {`${burnerAcc.accountAddress.slice(0, 6)}...${burnerAcc.accountAddress.slice(-4)}`}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col pb-[20px] justify-end gap-3">
+                  <div className="h-[300px] overflow-y-auto flex w-full flex-col gap-2">
+                    {katanaAccounts.map((katanaAcc, ix) => (
+                      <div
+                        key={katanaAcc.publicKey}
+                        className="w-full flex flex-col"
+                      >
+                        <button
+                          className={`hover:bg-gradient-modal border rounded-md text-neutral py-[8px] pl-[10px] pr-16 flex items-center gap-4 ${isDarkMode ? "border-[#385183]" : ""}`}
+                          onClick={(e) => handleConnectKatana(e, ix)}
+                        >
+                          <BlockieAvatar
+                            address={katanaAcc.accountAddress}
+                            size={35}
+                          />
+                          {`${katanaAcc.accountAddress.slice(0, 6)}...${katanaAcc.accountAddress.slice(-4)}`}
                         </button>
                       </div>
                     ))}

@@ -5,6 +5,25 @@ import { Networks } from "../types";
 
 dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
+// katana
+const providerKatana =
+  process.env.RPC_URL_KATANA &&
+  new RpcProvider({ nodeUrl: process.env.RPC_URL_KATANA });
+const deployerKatana =
+  process.env.ACCOUNT_ADDRESS_KATANA &&
+  process.env.PRIVATE_KEY_KATANA &&
+  new Account(
+    providerKatana,
+    process.env.ACCOUNT_ADDRESS_KATANA,
+    process.env.PRIVATE_KEY_KATANA,
+    "1"
+  );
+
+const ETH_TOKEN_ADDRESS_KATANA =
+  "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7";
+const STRK_TOKEN_ADDRESS_KATANA =
+  "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d";
+
 // devnet
 const PRIVATE_KEY_DEVNET =
   process.env.PRIVATE_KEY_DEVNET || "0x71d7bb07b9a64f6f78ac4c816aff4da9";
@@ -59,6 +78,10 @@ const deployerMainnet =
   );
 
 const feeTokenOptions = {
+  katana: [
+    { name: "eth", address: ETH_TOKEN_ADDRESS_KATANA },
+    { name: "strk", address: STRK_TOKEN_ADDRESS_KATANA },
+  ],
   devnet: [
     { name: "eth", address: ETH_TOKEN_ADDRESS_DEVNET },
     { name: "strk", address: STRK_TOKEN_ADDRESS_DEVNET },
@@ -74,6 +97,11 @@ const feeTokenOptions = {
 };
 
 export const networks: Networks = {
+  katana: {
+    provider: providerKatana,
+    deployer: deployerKatana,
+    feeToken: feeTokenOptions.katana,
+  },
   devnet: {
     provider: providerDevnet,
     deployer: deployerDevnet,

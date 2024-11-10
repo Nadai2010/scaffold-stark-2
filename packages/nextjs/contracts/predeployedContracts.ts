@@ -4,6 +4,8 @@
  */
 
 import {
+  katanaEthClassHash,
+  katanaStrkClassHash,
   devnetEthClassHash,
   devnetStrkClassHash,
   universalEthAddress,
@@ -14,6 +16,18 @@ import {
 } from "../utils/Constants";
 
 const preDeployedContracts = {
+  katana: {
+    Eth: {
+      address: universalEthAddress,
+      abi: universalErc20Abi,
+      classHash: katanaEthClassHash,
+    },
+    Strk: {
+      address: universalStrkAddress,
+      abi: universalErc20Abi,
+      classHash: katanaStrkClassHash,
+    },
+  },
   devnet: {
     Eth: {
       address: universalEthAddress,

@@ -16,14 +16,16 @@ import { useLocalStorage } from "usehooks-ts";
 import { BlockieAvatar, isENS } from "~~/components/scaffold-stark";
 import { useOutsideClick } from "~~/hooks/scaffold-stark";
 import { BurnerConnector } from "~~/services/web3/stark-burner/BurnerConnector";
+import { KatanaConnector } from "~~/services/web3/stark-burner/KatanaConnector";
 import { getTargetNetworks } from "~~/utils/scaffold-stark";
 import { burnerAccounts } from "~~/utils/devnetAccounts";
+import { katanaAccounts } from "~~/utils/katanaAccounts";
 import { Address } from "@starknet-react/chains";
 import { useDisconnect, useNetwork, useConnect } from "@starknet-react/core";
 import { getStarknetPFPIfExists } from "~~/utils/profile";
 import useConditionalStarkProfile from "~~/hooks/useConditionalStarkProfile";
 import { useTheme } from "next-themes";
-import { default as NextImage } from "next/image";
+import NextImage from "next/image";
 
 const allowedNetworks = getTargetNetworks();
 
@@ -45,6 +47,7 @@ export const AddressInfoDropdown = ({
   const { data: profile } = useConditionalStarkProfile(address);
   const { chain } = useNetwork();
   const [showBurnerAccounts, setShowBurnerAccounts] = useState(false);
+  const [showKatanaAccounts, setShowKatanaAccounts] = useState(false);
   const [selectingNetwork, setSelectingNetwork] = useState(false);
   const { connectors, connect } = useConnect();
   const { resolvedTheme } = useTheme();
@@ -56,12 +59,12 @@ export const AddressInfoDropdown = ({
   };
   useOutsideClick(dropdownRef, closeDropdown);
 
-  function handleConnectBurner(
+  const handleConnectBurner = (
     e: React.MouseEvent<HTMLButtonElement>,
     ix: number,
-  ) {
+  ) => {
     const connector = connectors.find(
-      (it) => it.id == "burner-wallet",
+      (it) => it.id === "burner-wallet",
     ) as BurnerConnector;
     if (connector) {
       connector.burnerAccount = burnerAccounts[ix];
@@ -69,14 +72,27 @@ export const AddressInfoDropdown = ({
       setLastConnector({ id: connector.id, ix });
       setShowBurnerAccounts(false);
     }
-  }
+  };
+
+  const handleConnectKatana = (
+    e: React.MouseEvent<HTMLButtonElement>,
+    ix: number,
+  ) => {
+    const connector = connectors.find(
+      (it) => it.id === "katana-wallet",
+    ) as KatanaConnector;
+    if (connector) {
+      connector.katanaAccount = katanaAccounts[ix];
+      connect({ connector });
+      setLastConnector({ id: connector.id, ix });
+      setShowKatanaAccounts(false);
+    }
+  };
 
   const [_, setLastConnector] = useLocalStorage<{ id: string; ix?: number }>(
     "lastUsedConnector",
     { id: "" },
-    {
-      initializeWithValue: false,
-    },
+    { initializeWithValue: false },
   );
 
   return (
@@ -150,7 +166,7 @@ export const AddressInfoDropdown = ({
               <span className="whitespace-nowrap">View QR Code</span>
             </label>
           </li>
-          {chain.network != "devnet" ? (
+          {chain.network !== "devnet" ? (
             <li className={selectingNetwork ? "hidden" : ""}>
               <button
                 className="menu-item btn-sm !rounded-xl flex gap-3 py-3"
@@ -169,7 +185,7 @@ export const AddressInfoDropdown = ({
             </li>
           ) : null}
 
-          {chain.network == "devnet" ? (
+          {chain.network === "devnet" ? (
             <li className={selectingNetwork ? "hidden" : ""}>
               <button
                 className="menu-item btn-sm !rounded-xl flex gap-3 py-3"
@@ -179,7 +195,22 @@ export const AddressInfoDropdown = ({
                 }}
               >
                 <UserCircleIcon className="h-6 w-4 ml-2 sm:ml-0" />
-                <span className="whitespace-nowrap">Switch Account</span>
+                <span className="whitespace-nowrap">Switch Burner Account</span>
+              </button>
+            </li>
+          ) : null}
+
+          {chain.network === "katana" ? (
+            <li className={selectingNetwork ? "hidden" : ""}>
+              <button
+                className="menu-item btn-sm !rounded-xl flex gap-3 py-3"
+                type="button"
+                onClick={() => {
+                  setShowKatanaAccounts(true);
+                }}
+              >
+                <UserCircleIcon className="h-6 w-4 ml-2 sm:ml-0" />
+                <span className="whitespace-nowrap">Switch Katana Account</span>
               </button>
             </li>
           ) : null}
@@ -190,10 +221,11 @@ export const AddressInfoDropdown = ({
                 <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
                   <div className="relative w-auto my-6 mx-auto max-w-5xl">
                     <div className="border border-[#4f4ab7] rounded-lg shadow-lg relative w-full mx-auto md:max-h-[30rem] md:max-w-[25rem] bg-base-100 outline-none focus:outline-none">
+                      {/* Header*/}
                       <div className="flex items-start justify-between p-4 pt-8 rounded-t">
                         <div className="flex justify-center items-center w-11/12">
                           <h2 className="text-lg text-center text-neutral m-0">
-                            Choose Account
+                            Choose Burner Account
                           </h2>
                         </div>
                         <button
@@ -213,10 +245,10 @@ export const AddressInfoDropdown = ({
                           </svg>
                         </button>
                       </div>
+                      {/* Burner Accounts*/}
                       <div className="flex flex-col items-center justify-center gap-3 mx-8 pb-10 pt-8">
                         <div className="h-[300px] overflow-y-auto flex w-full flex-col gap-2">
                           {burnerAccounts.map((burnerAcc, ix) => (
-                            // eslint-disable-next-line react/jsx-key
                             <div
                               key={burnerAcc.publicKey}
                               className="w-full flex flex-col"
@@ -228,7 +260,7 @@ export const AddressInfoDropdown = ({
                                 <BlockieAvatar
                                   address={burnerAcc.accountAddress}
                                   size={35}
-                                ></BlockieAvatar>
+                                />
                                 {`${burnerAcc.accountAddress.slice(0, 6)}...${burnerAcc.accountAddress.slice(-4)}`}
                               </button>
                             </div>
@@ -243,31 +275,65 @@ export const AddressInfoDropdown = ({
               document.body,
             )}
 
-          {/* TODO: reinstate if needed */}
-          {/* {allowedNetworks.length > 1 ? (
-            <li className={selectingNetwork ? "hidden" : ""}>
-              <button
-                className="btn-sm !rounded-xl flex gap-3 py-3"
-                type="button"
-                onClick={() => {
-                  setSelectingNetwork(true);
-                }}
-              >
-                <ArrowsRightLeftIcon className="h-6 w-4 ml-2 sm:ml-0" />{" "}
-                <span>Switch Network</span>
-              </button>
-            </li>
-          ) : null} */}
-          <li className={selectingNetwork ? "hidden" : ""}>
-            <button
-              className="menu-item text-secondary-content btn-sm !rounded-xl flex gap-3 py-3"
-              type="button"
-              onClick={() => disconnect()}
-            >
-              <ArrowLeftEndOnRectangleIcon className="h-6 w-4 ml-2 sm:ml-0" />{" "}
-              <span>Disconnect</span>
-            </button>
-          </li>
+          {showKatanaAccounts &&
+            createPortal(
+              <>
+                <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+                  <div className="relative w-auto my-6 mx-auto max-w-5xl">
+                    <div className="border border-[#4f4ab7] rounded-lg shadow-lg relative w-full mx-auto md:max-h-[30rem] md:max-w-[25rem] bg-base-100 outline-none focus:outline-none">
+                      {/* Header */}
+                      <div className="flex items-start justify-between p-4 pt-8 rounded-t">
+                        <div className="flex justify-center items-center w-11/12">
+                          <h2 className="text-lg text-center text-neutral m-0">
+                            Choose Katana Account
+                          </h2>
+                        </div>
+                        <button
+                          className="w-8 h-8 place-content-end rounded-full justify-center items-center flex"
+                          onClick={() => setShowKatanaAccounts(false)}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill="currentColor"
+                              d="m6.4 18.308l-.708-.708l5.6-5.6l-5.6-5.6l.708-.708l5.6 5.6l5.6-5.6l.708.708l-5.6 5.6l5.6 5.6l-.708.708l-5.6-5.6z"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      {/* Katana Accounts */}
+                      <div className="flex flex-col items-center justify-center gap-3 mx-8 pb-10 pt-8">
+                        <div className="h-[300px] overflow-y-auto flex w-full flex-col gap-2">
+                          {katanaAccounts.map((katanaAcc, ix) => (
+                            <div
+                              key={katanaAcc.publicKey}
+                              className="w-full flex flex-col"
+                            >
+                              <button
+                                className={`${isDarkMode ? "hover:bg-[#385183] border-[#385183]" : "hover:bg-gradient-light "} border rounded-md text-neutral py-[8px] pl-[10px] pr-16 flex items-center gap-4`}
+                                onClick={(e) => handleConnectKatana(e, ix)}
+                              >
+                                <BlockieAvatar
+                                  address={katanaAcc.accountAddress}
+                                  size={35}
+                                />
+                                {`${katanaAcc.accountAddress.slice(0, 6)}...${katanaAcc.accountAddress.slice(-4)}`}
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="backdrop-blur fixed inset-0 z-40"></div>
+              </>,
+              document.body,
+            )}
         </ul>
       </details>
     </>

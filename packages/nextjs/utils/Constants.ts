@@ -2,6 +2,9 @@
 const universalEthAddress =
   "0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7" as const;
 
+const katanaEthClassHash =
+  "0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f" as const;
+
 const devnetEthClassHash =
   "0x046ded64ae2dead6448e247234bab192a9c483644395b66f2155f2614e5804b0" as const;
 
@@ -17,6 +20,9 @@ const sepoliaMainnetStrkClassHash =
 
 const devnetStrkClassHash =
   "0x046ded64ae2dead6448e247234bab192a9c483644395b66f2155f2614e5804b0" as const;
+
+const katanaStrkClassHash =
+  "0x02a8846878b6ad1f54f6ba46f5f40e11cee755c677f130b2c4b60566c9003f1f" as const;
 
 const universalErc20Abi = [
   {
@@ -275,6 +281,8 @@ const universalErc20Abi = [
 export const LAST_CONNECTED_TIME_LOCALSTORAGE_KEY = "lastConnectedTime";
 
 export {
+  katanaEthClassHash,
+  katanaStrkClassHash,
   devnetEthClassHash,
   devnetStrkClassHash,
   universalEthAddress,

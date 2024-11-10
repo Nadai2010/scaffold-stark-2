@@ -28,12 +28,16 @@ export const CustomConnectButton = () => {
     ? getBlockExplorerAddressLink(targetNetwork, accountAddress)
     : undefined;
 
-  // effect to get chain id and address from account
+  // Effect to get chain id and address from account
   useEffect(() => {
-    if (account) {
+    if (account && account.channel) {
       const getChainId = async () => {
-        const chainId = await account.channel.getChainId();
-        setAccountChainId(BigInt(chainId as string));
+        try {
+          const chainId = await account.channel.getChainId();
+          setAccountChainId(BigInt(chainId as string));
+        } catch (error) {
+          console.error("Error getting chain ID:", error);
+        }
       };
 
       getChainId();
@@ -42,7 +46,12 @@ export const CustomConnectButton = () => {
 
   if (status === "disconnected") return <ConnectModal />;
 
+  // Log for comparing Chain IDs
+  console.log("Account Chain ID:", accountChainId.toString());
+  console.log("Target Network ID:", targetNetwork.id.toString());
+
   if (accountChainId !== targetNetwork.id) {
+    console.log("Wrong network detected.");
     return <WrongNetworkDropdown />;
   }
 
