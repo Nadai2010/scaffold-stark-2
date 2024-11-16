@@ -12,6 +12,7 @@
   },
   "scripts": {
     "chain": "yarn workspace @ss-2/snfoundry chain",
+    "chain:katana": "katana --disable-fee --allowed-origins \"*\"",
     "deploy": "yarn workspace @ss-2/snfoundry deploy",
     "deploy:no-reset": "yarn workspace @ss-2/snfoundry deploy --no-reset",
     "test": "yarn workspace @ss-2/snfoundry test",
